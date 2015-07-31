@@ -131,3 +131,5 @@ for page_num in range(1,250):
     # for every page determine column coordinates and parse values
     for page in root.xpath("/pdfxml/LTPage"):
         parse_page(page)
+
+    pdf.load(None)
