@@ -46,6 +46,9 @@ local_file = download_file(file_name)
 print "PDF file retrieved"
 
 pdf = pdfquery.PDFQuery(local_file)
+
+print "PDFQuery created"
+
 pdf.load()
 
 print "PDF loaded into memory"
