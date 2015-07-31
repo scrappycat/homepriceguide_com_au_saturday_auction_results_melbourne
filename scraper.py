@@ -3,7 +3,17 @@
 
 import urllib2
 import pdfquery
-from lxml import etree
+#from lxml import etree
+import scraperwiki
+from datetime import datetime
+
+# Drop previous data table
+try:
+    scraperwiki.sql.execute("DROP TABLE data")
+except:
+    print "table data not found"
+
+extractedOn = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
 # Get the pdf file
 def download_file(url):
@@ -12,7 +22,7 @@ def download_file(url):
     f = open(file_name, 'wb')
     meta = u.info()
     file_size = int(meta.getheaders("Content-Length")[0])
-    print "Downloading: %s Bytes: %s" % (file_name, file_size)
+    # print "Downloading: %s Bytes: %s" % (file_name, file_size)
 
     file_size_dl = 0
     block_sz = 8192
@@ -25,21 +35,21 @@ def download_file(url):
         f.write(buffer)
         status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
         status = status + chr(8) * (len(status) + 1)
-        print status,
+        # print status,
 
     f.close()
     return file_name
 
 # Main scrapper logic
 file_name = "http://www.homepriceguide.com.au/saturday_auction_results/Melbourne_Domain.pdf"
-# local_file = download_file(file_name)
+local_file = download_file(file_name)
 
-# pdf = pdfquery.PDFQuery(local_file)
-# pdf.load()
-# print etree.tostring(pdf.tree, pretty_print=True)
+pdf = pdfquery.PDFQuery(local_file)
+pdf.load()
 
 # temporary loading from  file
-root = etree.parse("f1.xml")
+#root = etree.parse("f1.xml")
+root = pdf.tree
 
 # for every page determine column coordinates and parse values
 for page in root.xpath("/pdfxml/LTPage"):
@@ -97,26 +107,13 @@ for page in root.xpath("/pdfxml/LTPage"):
         if "".join(empty_item.values()) == "".join(item.values()):
             continue
 
-        print item
-
-# import scraperwiki
-# import lxml.html
-#
-# # Read in a page
-# html = scraperwiki.scrape("http://foo.com")
-#
-# # Find something on the page using css selectors
-# root = lxml.html.fromstring(html)
-# root.cssselect("div[align='left']")
-#
-# # Write out to the sqlite database using scraperwiki library
-# scraperwiki.sqlite.save(unique_keys=['name'], data={"name": "susan", "occupation": "software developer"})
-#
-# # An arbitrary query against the database
-# scraperwiki.sql.select("* from data where 'name'='peter'")
-
-# You don't have to do things with the ScraperWiki and lxml libraries.
-# You can use whatever libraries you want: https://morph.io/documentation/python
-# All that matters is that your final data is written to an SQLite database
-# called "data.sqlite" in the current working directory which has at least a table
-# called "data".
+        # Write out to the sqlite database using scraperwiki library
+        scraperwiki.sqlite.save(unique_keys=['suburb','address'], data={
+            "suburb": item["suburb"],
+            "address": item["address"],
+            "type": item["type"],
+            "price": item["price"],
+            "result": item["result"],
+            "agent": item["agent"],
+            "extracted_on": extractedOn
+        })
