@@ -25,7 +25,7 @@ def download_file(url):
     # print "Downloading: %s Bytes: %s" % (file_name, file_size)
 
     file_size_dl = 0
-    block_sz = 8192
+    block_sz = 64000
     while True:
         buffer = u.read(block_sz)
         if not buffer:
@@ -33,8 +33,8 @@ def download_file(url):
 
         file_size_dl += len(buffer)
         f.write(buffer)
-        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-        status = status + chr(8) * (len(status) + 1)
+        # status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        # status = status + chr(8) * (len(status) + 1)
         # print status,
 
     f.close()
