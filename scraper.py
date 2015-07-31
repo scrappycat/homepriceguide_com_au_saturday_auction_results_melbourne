@@ -116,6 +116,7 @@ pdf = pdfquery.PDFQuery(local_file)
 
 print "PDFQuery created"
 
+# It won't go to 250 :)
 for page_num in range(1,250):
 
     try:
@@ -132,4 +133,5 @@ for page_num in range(1,250):
     for page in root.xpath("/pdfxml/LTPage"):
         parse_page(page)
 
+    root = None
     pdf.load(None)
