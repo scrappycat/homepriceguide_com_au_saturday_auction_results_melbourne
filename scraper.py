@@ -43,9 +43,12 @@ def download_file(url):
 # Main scrapper logic
 file_name = "http://www.homepriceguide.com.au/saturday_auction_results/Melbourne_Domain.pdf"
 local_file = download_file(file_name)
+print "PDF file retrieved"
 
 pdf = pdfquery.PDFQuery(local_file)
 pdf.load()
+
+print "PDF loaded into memory"
 
 # temporary loading from  file
 #root = etree.parse("f1.xml")
