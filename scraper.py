@@ -112,12 +112,10 @@ file_name = "http://www.homepriceguide.com.au/saturday_auction_results/Melbourne
 local_file = download_file(file_name)
 print "PDF file retrieved"
 
-pdf = pdfquery.PDFQuery(local_file)
-
-print "PDFQuery created"
-
 # It won't go to 250 :)
 for page_num in range(1,250):
+
+    pdf = pdfquery.PDFQuery(local_file)
 
     try:
         pdf.load(page_num)
@@ -135,3 +133,4 @@ for page_num in range(1,250):
 
     root = None
     pdf.load(None)
+    pdf = None
