@@ -3,7 +3,7 @@
 
 import urllib2
 import pdfquery
-#from lxml import etree
+from lxml import etree
 import scraperwiki
 from datetime import datetime
 
@@ -63,36 +63,47 @@ def parse_page(page):
             empty_item = item.copy()
 
             suburb = \
-                page.xpath('.//*[string-length(normalize-space(translate(text(),"\n","")))>0][@y0="' + line_y0 + '"][@x0="' + suburb_x0 + '"]/text()')
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + suburb_x0 + '"]/text()')
             if len(suburb) > 0:
                 item["suburb"]=suburb[0].strip()
 
             address = \
-                page.xpath('.//*[string-length(normalize-space(translate(text(),"\n","")))>0][@y0="' + line_y0 + '"][@x0="' + address_x0 + '"]/text()')
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + address_x0 + '"]/text()')
             if len(address) > 0:
                 item["address"]=address[0].strip()
 
             prop_type = \
-                page.xpath('.//*[string-length(normalize-space(translate(text(),"\n","")))>0][@y0="' + line_y0 + '"][@x0="' + type_x0 + '"]/text()')
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + type_x0 + '"]/text()')
             if len(prop_type) > 0:
                 item["type"]=prop_type[0].strip()
 
             price = \
-                page.xpath('.//*[string-length(normalize-space(translate(text(),"\n","")))>0][@y0="' + line_y0 + '"][substring(@x1,1,5)="' + price_x1 + '"]/text()')
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][substring(@x1,1,5)="' + price_x1[0:5] + '"]/text()')
+
             if len(price) > 0:
                 item["price"]=price[0].strip()
+#            else:
+#                print price_x1
+#                for c in page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"]'):
+#                    print etree.tostring(c, pretty_print=True)
 
             result = \
-                page.xpath('.//*[string-length(normalize-space(translate(text(),"\n","")))>0][@y0="' + line_y0 + '"][@x0="' + result_x0 + '"]/text()')
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + result_x0 + '"]/text()')
             if len(result) > 0:
                 item["result"]=result[0].strip()
 
             agent = \
-                page.xpath('.//*[string-length(normalize-space(translate(text(),"\n","")))>0][@y0="' + line_y0 + '"][@x0="' + agent_x0 + '"]/text()')
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + agent_x0 + '"]/text()')
+
             if len(agent) > 0:
                 item["agent"]=agent[0].strip()
 
             if "".join(empty_item.values()) == "".join(item.values()):
+                continue
+
+            # If 3 or more fields are empty, don't save it, just print it
+            if item.values().count("") > 2:
+                print "Found bogus line %s" % item
                 continue
 
             # Write out to the sqlite database using scraperwiki library
@@ -110,12 +121,18 @@ def parse_page(page):
 # Main scrapper logic
 file_name = "http://www.homepriceguide.com.au/saturday_auction_results/Melbourne_Domain.pdf"
 local_file = download_file(file_name)
+#local_file="Melbourne_Domain.pdf"
 print "PDF file retrieved"
 
 # It won't go to 250 :)
 for page_num in range(1,250):
 
-    pdf = pdfquery.PDFQuery(local_file)
+    pdf = pdfquery.PDFQuery(local_file,
+                            round_floats=True,
+                            round_digits=2,
+                            normalize_spaces=True,
+                            resort=True
+                            )
 
     try:
         pdf.load(page_num)
