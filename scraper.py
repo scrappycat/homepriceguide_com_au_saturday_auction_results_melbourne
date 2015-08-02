@@ -122,7 +122,7 @@ def parse_page(page):
                 continue
 
             # Write out to the sqlite database using scraperwiki library
-            scraperwiki.sqlite.save(unique_keys=['suburb','address', 'extracted_on'], data={
+            scraperwiki.sqlite.save(unique_keys=['suburb','address'], data={
                 "suburb": item["suburb"],
                 "address": item["address"],
                 "type": item["type"],
