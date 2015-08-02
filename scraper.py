@@ -8,10 +8,10 @@ import scraperwiki
 from datetime import datetime
 
 # Drop previous data table
-try:
-    scraperwiki.sql.execute("DROP TABLE data")
-except:
-    print "table data not found"
+# try:
+#     scraperwiki.sql.execute("DROP TABLE data")
+# except:
+#     print "table data not found"
 
 extractedOn = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
