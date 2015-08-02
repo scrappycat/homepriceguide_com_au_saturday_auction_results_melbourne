@@ -57,7 +57,8 @@ def parse_page(page):
                 "type": "",
                 "price": "",
                 "result": "",
-                "agent": ""
+                "agent": "",
+                "link": ""
             }
 
             empty_item = item.copy()
@@ -67,10 +68,15 @@ def parse_page(page):
             if len(suburb) > 0:
                 item["suburb"]=suburb[0].strip()
 
-            address = \
-                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + address_x0 + '"]/text()')
-            if len(address) > 0:
+            address_elem = \
+                page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + address_x0 + '"]')
+            if len(address_elem) > 0:
+                address = address_elem[0].xpath("./text()")
                 item["address"]=address[0].strip()
+                addr_x0 = address_elem[0].xpath("./@x0")[0]
+                addr_y0 = address_elem[0].xpath("./@y0")[0]
+                addr_x1 = address_elem[0].xpath("./@x1")[0]
+                addr_y1 = address_elem[0].xpath("./@y1")[0]
 
             prop_type = \
                 page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + type_x0 + '"]/text()')
@@ -94,9 +100,18 @@ def parse_page(page):
 
             agent = \
                 page.xpath('.//*[string-length(normalize-space(text()))>0][@y0="' + line_y0 + '"][@x0="' + agent_x0 + '"]/text()')
-
             if len(agent) > 0:
                 item["agent"]=agent[0].strip()
+
+            try:
+                addr_x0 and addr_y0 and addr_y0 and addr_y1
+            except:
+                item["link"]=""
+            else:
+                link_xpath = ".//Annot[@x0<%s][@y0<%s][@x1>%s][@y1>%s]/@URI" % (addr_x0, addr_y0, addr_x1, float(addr_y1)-1)
+                link = page.xpath(link_xpath)
+                if len(link)>0:
+                    item["link"]=link[0].strip()
 
             if "".join(empty_item.values()) == "".join(item.values()):
                 continue
@@ -114,6 +129,7 @@ def parse_page(page):
                 "price": item["price"],
                 "result": item["result"],
                 "agent": item["agent"],
+                "url": item["link"],
                 "extracted_on": extractedOn
             })
 
